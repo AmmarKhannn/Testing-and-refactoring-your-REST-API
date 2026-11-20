@@ -58,4 +58,16 @@ function filterTodos(todos, state) {
   return state === undefined ? todos : todos.filter(todo => todo.state === state);
 }
 
-module.exports = { states, validDate, validate, makeTodo, updateTodo, filterTodos };
+// Wrap CSV text in quotes so commas, quotes and new lines are handled correctly.
+function csvValue(value) {
+  const text = value === undefined || value === null ? '' : String(value);
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function toCsv(todos) {
+  const fields = ['id', 'title', 'description', 'state', 'dueDate', 'createdAt', 'updatedAt'];
+  const rows = todos.map(todo => fields.map(field => csvValue(todo[field])).join(','));
+  return [fields.join(','), ...rows].join('\n');
+}
+
+module.exports = { states, validDate, validate, makeTodo, updateTodo, filterTodos, toCsv };

@@ -556,3 +556,14 @@ DELETE {{baseUrl}}/todos/{{todoId}}
 
 ### Delete the default todo (204)
 DELETE {{baseUrl}}/todos/{{createDefault.response.body.$.id}}
+
+### Assignment 6: GET todos in CSV format
+GET http://localhost:3000/todos?state=done
+Accept: text/csv
+
+### Assignment 6: GET todos in JSON format
+GET http://localhost:3000/todos?state=done
+Accept: application/json
+
+### Assignment 6: OpenAPI specification
+GET http://localhost:3000/openapi.json

@@ -15,6 +15,27 @@ npm start
 
 The API runs at `http://localhost:3000`. Keep the terminal open while testing. Press Ctrl+C to stop it. You can change the port with the `PORT` environment variable.
 
+## Swagger API documentation
+
+Start the server with `npm start`, then open **http://localhost:3000/doc** in a browser.
+You can try the API requests there using **Try it out** and **Execute**.
+The documentation describes all the endpoints and shows JSON and CSV formats for GET `/todos`.
+The Swagger page loads its interface from a CDN, so an internet connection is needed to display the page.
+The OpenAPI specification itself is available locally at `http://localhost:3000/openapi.json`.
+
+## CSV output
+
+GET `/todos` normally returns JSON. To request CSV, send the header `Accept: text/csv`.
+The same `state` filter works with CSV. For example:
+
+```http
+GET http://localhost:3000/todos?state=done
+Accept: text/csv
+```
+
+CSV includes `id`, `title`, `description`, `state`, `dueDate`, `createdAt` and `updatedAt`.
+For JSON, use `Accept: application/json` (or leave the header out).
+
 ## Endpoints
 
 | Method | URL | Result |
@@ -22,6 +43,7 @@ The API runs at `http://localhost:3000`. Keep the terminal open while testing. P
 | POST | `/todos` | Creates a todo and returns 201, the object and a Location header |
 | GET | `/todos` | Returns all todos with 200 |
 | GET | `/todos?state=doing` | Returns todos matching the state with 200 |
+| GET | `/doc` | Opens the Swagger documentation in a browser |
 | GET | `/todos/:id` | Returns one todo with 200 |
 | PUT | `/todos/:id` | Updates supplied fields and returns the full object with 200 |
 | DELETE | `/todos/:id` | Deletes a todo and returns 204 with no body |
@@ -42,7 +64,7 @@ All three states work as filters. An empty list returns `[]` with 200. PUT accep
 
 Unknown fields, including client-supplied IDs and timestamps, are rejected. Optional fields may be omitted, but `null` is not accepted. An update must include at least one editable field. Bodies must be JSON objects, not arrays or single values. The maximum body size is 16 KB.
 
-POST and PUT need `Content-Type: application/json`. Responses with a body use JSON. The requests file also uses `Accept: application/json`.
+POST and PUT need `Content-Type: application/json`. Responses with a body normally use JSON. GET `/todos` can also return CSV with `Accept: text/csv`.
 
 ## Examples
 
@@ -128,7 +150,7 @@ npm test
 
 The tests send real HTTP requests to a local server on a free port. They check the full create/read/update/delete flow, all state filters, defaults, unique IDs, date handling, timestamps, Location and JSON headers, and the error cases above. Rejected updates are checked to make sure they do not change the stored todo.
 
-Result from the development check on 5 November 2026, using Node.js 24.22.1: **76 tests passed, 0 failed**. The full output is in `test-results.txt`.
+The test suite also includes Assignment 5 unit and integration tests and Assignment 6 tests for CSV and OpenAPI. Run `npm test` to see the results on your computer. The old `test-results.txt` is from Assignment 4.
 
 ## Report and reflection
 

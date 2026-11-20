@@ -1,11 +1,32 @@
 const express = require('express');
-const { states, validate, makeTodo, updateTodo, filterTodos } = require('./todoLogic');
+const { states, validate, makeTodo, updateTodo, filterTodos, toCsv } = require('./todoLogic');
 
 function createApp() {
   const app = express();
   const todos = [];
   app.disable('x-powered-by');
   app.set('query parser', 'simple');
+
+  // API documentation. Swagger UI loads its scripts from the CDN.
+  app.get('/openapi.json', (req, res) => res.json(require('./openapi.json')));
+  app.get('/doc', (req, res) => {
+    res.type('html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Todo API documentation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    SwaggerUIBundle({ url: '/openapi.json', dom_id: '#swagger-ui', deepLinking: true });
+  </script>
+</body>
+</html>`);
+  });
 
   // Create and update requests must contain JSON.
   app.use((req, res, next) => {
@@ -34,7 +55,11 @@ function createApp() {
     if (state !== undefined && (typeof state !== 'string' || !states.includes(state))) {
       return res.status(400).json({ error: 'State filter must be todo, doing or done, once only.' });
     }
-    res.json(filterTodos(todos, state));
+    const result = filterTodos(todos, state);
+    const format = req.accepts(['application/json', 'text/csv']);
+    if (!format) return res.status(406).json({ error: 'Only JSON and CSV formats are supported.' });
+    if (format === 'text/csv') return res.type('text/csv').send(toCsv(result));
+    res.json(result);
   });
 
   app.get('/todos/:id', (req, res) => {
